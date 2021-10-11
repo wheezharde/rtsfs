@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Visual Studio files
+/.vs
+/project/vs2019/.vs/
+
+# Output
+/project/vs2019/x64/
