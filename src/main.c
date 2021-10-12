@@ -23,11 +23,217 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <stdint.h>
+#include <stdlib.h>
+
+typedef struct appData_s {
+    BITMAPINFO ** buffers;
+    uint32_t bufferForeground;
+    uint32_t bufferCount;
+    HDC dc;
+    HBITMAP bmp;
+    int width;
+    int height;
+    int framerate;
+    int frametime;
+    uint64_t nextframe;
+} appData_s;
+
+static LRESULT CALLBACK myWindowProc( HWND wnd, UINT msg, WPARAM wp, LPARAM lp ) {
+    switch ( msg ) {
+        case WM_CREATE: {
+            CREATESTRUCT * const cs = ( CREATESTRUCT * )lp;
+            appData_s * const me = ( appData_s * )cs->lpCreateParams;
+
+            SetWindowLongPtr( wnd, GWLP_USERDATA, ( LONG_PTR )me );
+        } break;
+
+        case WM_PAINT: {
+            PAINTSTRUCT ps;
+            HDC const dc = BeginPaint( wnd, &ps );;
+
+            RECT r;
+            GetClientRect( wnd, &r );
+
+            appData_s * const me = ( appData_s * )GetWindowLongPtr( wnd, GWLP_USERDATA );
+
+            if ( me->width != r.right - r.left || me->height != r.bottom - r.top ) {
+                me->width = r.right - r.left;
+                me->height = r.bottom - r.top;
+
+                ReleaseDC( NULL, me->dc );
+                DeleteObject( me->bmp );
+
+                if ( me->buffers != NULL ) {
+                    for ( size_t i = 0; i < me->bufferCount; i++ ) {
+                        if ( me->buffers[ i ] != NULL ) {
+                            free( me->buffers[ i ] );
+                        }
+                    }
+                    free( me->buffers );
+                }
+
+                me->dc = CreateCompatibleDC( GetDC( NULL ) );
+                me->bmp = CreateCompatibleBitmap( GetDC( NULL ), me->width, me->height );
+
+                SelectObject( me->dc, me->bmp );
+
+                me->buffers = ( BITMAPINFO ** )malloc( sizeof( BITMAPINFO * ) * me->bufferCount );
+                if ( me->buffers != NULL ) {
+                    for ( size_t i = 0; i < me->bufferCount; i++ ) {
+                        const size_t size = sizeof( BITMAPINFO ) + sizeof( COLORREF ) * me->width * me->height;
+                        BITMAPINFO * const bmi = ( BITMAPINFO * )malloc( size );
+                        me->buffers[ i ] = bmi;
+                        if ( bmi == NULL ) {
+                            continue;
+                        }
+                        memset( bmi, 0, size );
+                        bmi->bmiHeader.biSize = sizeof( BITMAPINFO );
+                        bmi->bmiHeader.biWidth = ( LONG )me->width;
+                        bmi->bmiHeader.biHeight = ( LONG )me->height;
+                        bmi->bmiHeader.biPlanes = 1;
+                        bmi->bmiHeader.biBitCount = 32;
+                        bmi->bmiHeader.biCompression = BI_RGB;
+                        bmi->bmiHeader.biSizeImage = 0;
+                        bmi->bmiHeader.biXPelsPerMeter = 0;
+                        bmi->bmiHeader.biYPelsPerMeter = 0;
+                        bmi->bmiHeader.biClrUsed = 0;
+                        bmi->bmiHeader.biClrImportant = 0;
+                    }
+                }
+            }
+
+            me->bufferForeground++;
+            if ( me->bufferForeground >= me->bufferCount ) {
+                me->bufferForeground = 0;
+            }
+
+            BITMAPINFO * const bmi = me->buffers[ me->bufferForeground ];
+            if ( bmi != NULL ) {
+                SetDIBits( me->dc, me->bmp, 0, me->height, bmi + 1, bmi, DIB_RGB_COLORS );
+                BitBlt( dc,
+                        ps.rcPaint.left,
+                        ps.rcPaint.top,
+                        ps.rcPaint.right - ps.rcPaint.left,
+                        ps.rcPaint.bottom - ps.rcPaint.top,
+                        me->dc,
+                        ps.rcPaint.left,
+                        ps.rcPaint.top,
+                        SRCCOPY );
+            }
+
+            EndPaint( wnd, &ps );
+        } break;
+        case WM_CLOSE:
+            PostQuitMessage( 0 );
+            break;
+    }
+
+    return DefWindowProc( wnd, msg, wp, lp );
+}
+
+static ATOM registerWindowClass( const char * const classname ) {
+    WNDCLASSEXA wndClass;
+    memset( &wndClass, 0, sizeof( wndClass ) );
+    wndClass.cbSize = sizeof( wndClass );
+    wndClass.style = CS_HREDRAW | CS_VREDRAW;
+    wndClass.lpfnWndProc = myWindowProc;
+    wndClass.hInstance = GetModuleHandle( NULL );
+    wndClass.lpszClassName = classname;
+    return RegisterClassExA( &wndClass );
+}
+
+static void unregisterWindowClass( const char * const classname ) {
+    UnregisterClassA( classname, GetModuleHandle( NULL ) );
+}
+
+static int update( void ) {
+    return 0;
+}
+
+static void render( void ) {
+}
+
 int WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show ) {
     ( void )inst;
     ( void )prev;
     ( void )cmdline;
     ( void )show;
+
+    const char * windowClassName = "rtsfs";
+
+    ATOM wndAtom = registerWindowClass( windowClassName );
+    if ( wndAtom == 0 ) {
+        return -1;
+    }
+
+    appData_s appData;
+    memset( &appData, 0, sizeof( appData ) );
+
+    appData.bufferCount = 3;
+    appData.framerate = 60;
+    appData.frametime = 1000 / appData.framerate;
+
+    HWND wnd = CreateWindowExA( 0,
+                                windowClassName,
+                                "RTS From Scratch",
+                                WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
+                                0,
+                                0,
+                                1024,
+                                768,
+                                NULL,
+                                NULL,
+                                inst,
+                                &appData );
+
+    appData.nextframe = GetTickCount64() + appData.frametime;
+
+    if ( wnd != NULL ) {
+        for ( ;; ) {
+            for ( ;; ) {
+                const ULONGLONG now = GetTickCount64();
+                if ( now >= appData.nextframe ) {
+                    appData.nextframe += appData.frametime;
+                    break;
+                }
+                Sleep( 1 );
+            }
+
+            MSG msg;
+            while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
+                if ( msg.message == WM_QUIT ) {
+                    break;
+                }
+                TranslateMessage( &msg );
+                DispatchMessage( &msg );
+            }
+
+            if ( msg.message == WM_QUIT ) {
+                break;
+            }
+
+            render();
+
+            if ( update() != 0 ) {
+                break;
+            }
+        }
+    }
+
+    ReleaseDC( wnd, appData.dc );
+    DeleteObject( appData.bmp );
+
+    if ( appData.buffers != NULL ) {
+        for ( size_t i = 0; i < appData.bufferCount; i++ ) {
+            if ( appData.buffers[ i ] != NULL ) {
+                free( appData.buffers[ i ] );
+            }
+        }
+        free( appData.buffers );
+    }
+
+    unregisterWindowClass( windowClassName );
 
     return 0;
 }
