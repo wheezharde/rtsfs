@@ -148,15 +148,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\main.c" />
-    <ClCompile Include="..\..\src\render.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitignore" />
     <None Include="..\..\LICENSE" />
     <None Include="..\..\README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\render.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
