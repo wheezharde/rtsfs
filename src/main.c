@@ -148,7 +148,7 @@ static void unregisterWindowClass( const char * const classname ) {
 }
 
 static int update( void ) {
-    return 0;
+    return 1;
 }
 
 static void render( void ) {
