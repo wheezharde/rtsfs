@@ -26,6 +26,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "config.h"
+
 typedef struct appData_s {
     BITMAPINFO ** buffers;
     uint32_t bufferForeground;
@@ -159,6 +161,17 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
     ( void )prev;
     ( void )cmdline;
     ( void )show;
+
+    uint8_t runEditor = 0;
+
+    configRule_s configRule[] = {
+        // name     parseFunction        parseParam  arg
+        { "editor", Config_ParseBoolean, &runEditor, kConfigArg_Required },
+    };
+    const size_t configRuleCount = sizeof( configRule ) / sizeof( configRule[ 0 ] );
+
+    const configResult_s result = Config_Parse( __argc, __argv, configRuleCount, configRule );
+    ( void )result;
 
     const char * windowClassName = "rtsfs";
 
