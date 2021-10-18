@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Michael Bosley
+ * Copyright (c) 2021 wheezharde
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -154,7 +154,7 @@ static int update( void ) {
 static void render( void ) {
 }
 
-int WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show ) {
+int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show ) {
     ( void )inst;
     ( void )prev;
     ( void )cmdline;
