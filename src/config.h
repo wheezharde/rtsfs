@@ -71,4 +71,4 @@ void Config_ParseInt32( void * const result, const char * const value );
 // evaluates all others to false (0)
 void Config_ParseBoolean( void * const result, const char * const value );
 
-#endif /* ___RTSFS_CONFIG_H___ */
+#endif // ___RTSFS_CONFIG_H___
