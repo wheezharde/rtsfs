@@ -110,7 +110,3 @@ void Window_Render( rgba_s * const surface, size_t stride, rect_s< size_t > clip
 void Window_SetParent( window_s * const parent, window_s * const child );
 
 #endif // ___RTSFS_WINDOW_H___
-
-// TODO:
-// postion as world space or local space
-// flip HWND render such that y=0 is top
