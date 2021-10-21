@@ -37,8 +37,13 @@ vec2_s< _type_ > vec2_zero( void ) {
 }
 
 template < typename _type_ >
-vec2_s< _type_ > vec2_add( vec2_s< _type_ > a, vec2_s< _type_ > b ) {
+vec2_s< _type_ > operator+( vec2_s< _type_ > a, vec2_s< _type_ > b ) {
     return { a.x + b.x, a.y + b.y };
+}
+
+template < typename _type_ >
+vec2_s< _type_ > operator-( vec2_s< _type_ > a, vec2_s< _type_ > b ) {
+    return { a.x - b.x, a.y - b.y };
 }
 
 #endif // ___RTSFS_VEC_H___

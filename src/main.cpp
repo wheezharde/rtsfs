@@ -275,10 +275,7 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
             }
 
             rgba_s * const rgba = ( rgba_s * )( appData.buffers[ appData.bufferForeground ] + 1 );
-            rect_s< size_t > clip = {
-                vec2_zero< size_t >(),
-                { appData.width, appData.height }
-            };
+            rect_s< size_t > clip = rectFrom( vec2_zero< size_t >(), { appData.width, appData.height } );
             Window_Render( rgba, appData.width, clip );
 
             InvalidateRect( wnd, 0, FALSE );

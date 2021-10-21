@@ -55,10 +55,7 @@ static void Window_RenderRecurse( window_s * const window, rgba_s * const surfac
         window->cb( window, kWindow_OnRender, ( uintptr_t )&renderData, ( uintptr_t )userData );
     }
 
-    rect_s< size_t > windowClip = {
-        window->position,
-        vec2_add( window->position, window->size ),
-    };
+    rect_s< size_t > windowClip = rectFrom( window->position, window->size );
 
     for ( size_t i = 0; i < window->childCount; i++ ) {
         Window_RenderRecurse( window->child[ i ], surface, stride, windowClip );

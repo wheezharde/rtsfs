@@ -31,4 +31,12 @@ struct rect_s {
     vec2_s< _type_ > mx{ 0, 0 };
 };
 
+template < typename _type_ >
+rect_s< _type_ > rectFrom( vec2_s< _type_ > position, vec2_s< _type_ > size ) {
+    return rect_s< _type_ > {
+        position,
+        position + size - vec2_s< _type_ >{ 1, 1 }
+    };
+}
+
 #endif // ___RTSFS_RECT_H___
