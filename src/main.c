@@ -27,6 +27,8 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "rgba.h"
+#include "window.h"
 
 typedef struct appData_s {
     BITMAPINFO ** buffers;
@@ -156,6 +158,45 @@ static int update( void ) {
 static void render( void ) {
 }
 
+static uintptr_t windowCallback( window_s * const window, const windowMsg_e msg, const uintptr_t a, const uintptr_t b ) {
+    ( void )window;
+    ( void )msg;
+    ( void )a;
+    ( void )b;
+
+    switch ( msg ) {
+        case kWindow_OnCreate:
+            return 1;
+
+        case kWindow_OnDestroy:
+            return 0;
+
+        case kWindow_OnRender: {
+            windowRenderData_s * const renderData = ( windowRenderData_s * )a;
+            // todo: clip
+            rgba_s * pix = renderData->surface + ( uintptr_t )( renderData->position.y * renderData->stride + renderData->position.x );
+            for ( size_t y = 0; y < renderData->size.y; y++ ) {
+                memset( pix , 0xcc, ( size_t )(renderData->size.x * sizeof( rgba_s ) ) );
+                pix += renderData->stride;
+            }
+        } break;
+
+        case kWindow_OnSize:
+            return 0;
+
+        case kWindow_OnPosition:
+            return 0;
+
+        case kWindow_OnAddChild:
+            return 0;
+
+        default:
+            break;
+    }
+
+    return 0;
+}
+
 int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show ) {
     ( void )inst;
     ( void )prev;
@@ -202,6 +243,8 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
 
     appData.nextframe = GetTickCount64() + appData.frametime;
 
+    window_s * const w = Window_Create( 0, windowCallback, vec2f32_zero(), ( vec2f32_s ){ 100, 100 }, 64, 0 );
+
     if ( wnd != NULL ) {
         for ( ;; ) {
             for ( ;; ) {
@@ -226,6 +269,17 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
                 break;
             }
 
+            rgba_s * const rgba = ( rgba_s * )( appData.buffers[ appData.bufferForeground ] + 1 );
+
+            Window_Render( rgba,
+                           appData.width,
+                           ( rectf32_s ){
+                               vec2f32_zero(),
+                               ( vec2f32_s ){ ( float )appData.width, ( float )appData.height }
+                           }  );
+
+            InvalidateRect( wnd, 0, FALSE );
+
             render();
 
             if ( update() != 0 ) {
@@ -233,6 +287,8 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
             }
         }
     }
+
+    Window_Destroy( w );
 
     ReleaseDC( wnd, appData.dc );
     DeleteObject( appData.bmp );

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <DisableSpecificWarnings>4820;5045</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4464;4820;5045</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,7 +103,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <DisableSpecificWarnings>4820;5045</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4464;4820;5045</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,7 +121,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
-      <DisableSpecificWarnings>4820;5045</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4464;4820;5045</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,7 +139,7 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
-      <DisableSpecificWarnings>4820;5045</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4464;4820;5045</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\config.c" />
     <ClCompile Include="..\..\src\main.c" />
+    <ClCompile Include="..\..\src\window.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitignore" />
@@ -159,6 +160,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\config.h" />
+    <ClInclude Include="..\..\src\rect.h" />
+    <ClInclude Include="..\..\src\rgba.h" />
+    <ClInclude Include="..\..\src\vec.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\src\window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
