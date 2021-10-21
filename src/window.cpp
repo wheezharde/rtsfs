@@ -26,19 +26,21 @@
 #include <memory.h>
 #include <stdlib.h>
 
+#include <new>
+
 typedef struct window_s {
-    msgHandler_cb cb;
-    size_t userDataSize;
-    vec2f32_s position;
-    vec2f32_s size;
-    window_s ** child;
-    size_t childCount;
-    size_t childSize;
+    msgHandler_cb cb = nullptr;
+    size_t userDataSize = 0;
+    vec2_s< size_t > position;
+    vec2_s< size_t > size;
+    window_s ** child = nullptr;
+    size_t childCount = 0;
+    size_t childSize = 0;
 } window_s;
 
 static window_s * root = 0;
 
-static void Window_RenderRecurse( window_s * const window, rgba_s * const surface, size_t stride, rectf32_s clip ) {
+static void Window_RenderRecurse( window_s * const window, rgba_s * const surface, size_t stride, rect_s< size_t > clip ) {
     windowRenderData_s renderData = {
         surface,
         stride,
@@ -49,13 +51,13 @@ static void Window_RenderRecurse( window_s * const window, rgba_s * const surfac
 
     void * const userData = window->userDataSize ? window + 1 : 0;
 
-    if ( window->cb != 0 ) {
+    if ( window->cb != nullptr ) {
         window->cb( window, kWindow_OnRender, ( uintptr_t )&renderData, ( uintptr_t )userData );
     }
 
-    rectf32_s windowClip = {
+    rect_s< size_t > windowClip = {
         window->position,
-        vec2f32_add( window->position, window->size ),
+        vec2_add( window->position, window->size ),
     };
 
     for ( size_t i = 0; i < window->childCount; i++ ) {
@@ -63,15 +65,15 @@ static void Window_RenderRecurse( window_s * const window, rgba_s * const surfac
     }
 }
 
-window_s * Window_Create( window_s * const parent, msgHandler_cb cb, vec2f32_s position, vec2f32_s size, size_t userDataSize, void * const param ) {
+window_s * Window_Create( window_s * const parent, msgHandler_cb cb, vec2_s< size_t > position, vec2_s< size_t > size, size_t userDataSize, void * const param ) {
     const size_t mallocSize = sizeof( window_s ) + userDataSize;
 
-    window_s * const window = malloc( mallocSize );
+    window_s * const window = ( window_s * )malloc( mallocSize );
     if ( window == 0 ) {
         return 0;
     }
 
-    memset( window, 0, mallocSize );
+    new ( window ) window_s;
 
     window->cb = cb;
     window->userDataSize = userDataSize;
@@ -80,7 +82,7 @@ window_s * Window_Create( window_s * const parent, msgHandler_cb cb, vec2f32_s p
 
     void * const userData = userDataSize ? window + 1 : 0;
 
-    if ( window->cb != 0 ) {
+    if ( window->cb != nullptr ) {
         window->cb( window, kWindow_OnCreate, ( uintptr_t )param, ( uintptr_t )userData );
     }
 
@@ -94,7 +96,7 @@ void Window_Destroy( window_s * const window ) {
         return;
     }
 
-    if ( window->cb != 0 ) {
+    if ( window->cb != nullptr ) {
         window->cb( window, kWindow_OnDestroy, 0, ( uintptr_t )( window + 1 ) );
     }
 
@@ -105,7 +107,7 @@ uintptr_t Window_SendMessage( window_s * const window,
                               const windowMsg_e msg,
                               const uintptr_t a,
                               const uintptr_t b ) {
-    if ( window->cb != 0 ) {
+    if ( window->cb != nullptr ) {
         return window->cb( window, msg, a, b );
     }
     return 0;
@@ -119,7 +121,7 @@ void * Window_GetUserData( window_s * const window ) {
     return window->userDataSize ? window + 1 : 0;
 }
 
-void Window_Render( rgba_s * const surface, size_t stride, rectf32_s clip ) {
+void Window_Render( rgba_s * const surface, size_t stride, rect_s< size_t > clip ) {
     if ( root == 0 ) {
         return;
     }
@@ -144,12 +146,12 @@ void Window_SetParent( window_s * const parent, window_s * const child ) {
 
     if ( parent == 0 ) {
         if ( root == 0 ) {
-            root = malloc( sizeof( window_s ) );
+            root = ( window_s * )malloc( sizeof( window_s ) );
             if ( root == 0 ) {
-                assert( root != 0 );
+                assert( root != nullptr );
                 return;
             }
-            memset( root, 0, sizeof( window_s ) );
+            new ( root ) window_s;
         }
         top = root;
     }
@@ -158,14 +160,14 @@ void Window_SetParent( window_s * const parent, window_s * const child ) {
         const size_t growthStep = 8;
         window_s ** const old = top->child;
         top->childSize += growthStep;
-        top->child = malloc( sizeof( window_s * ) * top->childSize );
+        top->child = ( window_s ** )malloc( sizeof( window_s * ) * top->childSize );
         if ( top->child == 0 ) {
-            assert( top->child != 0 );
+            assert( top->child != nullptr );
             top->child = old;
             top->childSize -= growthStep;
             return;
         }
-        if ( old != 0 ) {
+        if ( old != nullptr ) {
             memcpy( top->child, old, sizeof( window_s * ) * top->childCount );
             free( old );
         }
@@ -173,7 +175,7 @@ void Window_SetParent( window_s * const parent, window_s * const child ) {
 
     top->child[ top->childCount++ ] = child;
 
-    if ( top->cb != 0 ) {
+    if ( top->cb != nullptr ) {
         ( void )top->cb( top, kWindow_OnAddChild, 0, ( uintptr_t )child );
     }
 }

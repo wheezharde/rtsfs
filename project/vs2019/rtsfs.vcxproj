@@ -149,9 +149,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\config.c" />
-    <ClCompile Include="..\..\src\main.c" />
-    <ClCompile Include="..\..\src\window.c" />
+    <ClCompile Include="..\..\src\config.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitignore" />

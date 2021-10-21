@@ -40,10 +40,10 @@ configResult_s Config_Parse( const size_t count, const char * const * const argv
 
         const char * const eq = strstr( name, "=" );
 
-        const ptrdiff_t nameLength = eq ? ( eq - name ) : strlen( name );
+        const size_t nameLength = eq ? ( eq - name ) : strlen( name );
 
         if ( eq && eq[ 1 ] == 0 ) {
-            return ( configResult_s ){ kConfigError_MissingValue, namePtr - argv };
+            return { kConfigError_MissingValue, ( size_t )( namePtr - argv ) };
         }
 
         int handled = 0;
@@ -57,7 +57,7 @@ configResult_s Config_Parse( const size_t count, const char * const * const argv
                 continue;
             }
 
-            const ptrdiff_t ruleLength = strlen( rule->name );
+            const size_t ruleLength = strlen( rule->name );
 
             if ( ruleLength != nameLength ) {
                 continue;
@@ -67,17 +67,17 @@ configResult_s Config_Parse( const size_t count, const char * const * const argv
                 continue;
             }
 
-            if ( rule->arg == kConfigArg_None && eq != 0 ) {
-                return ( configResult_s ){ kConfigError_ArgumentNotAllowed, namePtr - argv };
+            if ( rule->arg == kConfigArg_None && eq != nullptr ) {
+                return { kConfigError_ArgumentNotAllowed, ( size_t )( namePtr - argv ) };
             }
 
             else if ( rule->arg == kConfigArg_Required && eq == 0 ) {
-                return ( configResult_s ){ kConfigError_ArgumentRequired, namePtr - argv };
+                return { kConfigError_ArgumentRequired, ( size_t )( namePtr - argv ) };
             }
 
-            rule->value = eq != 0 ? eq + 1 : 0;
+            rule->value = eq != nullptr ? eq + 1 : nullptr;
 
-            if ( eq != 0 && rule->parseFunction != 0 ) {
+            if ( eq != nullptr && rule->parseFunction != nullptr ) {
                 rule->parseFunction( rule->parseParam, eq + 1 );
             }
 
@@ -88,11 +88,11 @@ configResult_s Config_Parse( const size_t count, const char * const * const argv
         }
 
         if ( !handled ) {
-            return ( configResult_s ){ kConfigError_UnknownArgument, namePtr - argv };
+            return { kConfigError_UnknownArgument, ( size_t )( namePtr - argv ) };
         }
     }
 
-    return ( configResult_s ){ kConfigError_None, 0 };
+    return { kConfigError_None, 0 };
 }
 
 void Config_ParseInt32( void * const number, const char * const value ) {

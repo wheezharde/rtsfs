@@ -30,22 +30,9 @@
 #include <stdint.h>
 
 typedef struct rgba_s rgba_s;
-
-typedef enum uiError_e {
-    kUIError_None = 0,
-} uiError_e;
-
 typedef struct window_s window_s;
 
-typedef struct windowRenderData_s {
-    rgba_s * surface;
-    size_t stride;
-    rectf32_s clip;
-    vec2f32_s position;
-    vec2f32_s size;
-} windowRenderData_s;
-
-typedef enum windowMsg_e {
+typedef enum windowMsg_e : uint8_t {
     // usage:  called before the window becomes visible
     // msg:    kWindow_OnCreate
     // a:      ( void * )param passed in Window_Create
@@ -89,6 +76,14 @@ typedef enum windowMsg_e {
     kWindow_OnAddChild,
 } windowMsg_e;
 
+typedef struct windowRenderData_s {
+    rgba_s * surface = nullptr;
+    size_t stride = 0;
+    rect_s< size_t > clip;
+    vec2_s< size_t > position;
+    vec2_s< size_t > size;
+} windowRenderData_s;
+
 typedef uintptr_t ( * msgHandler_cb )( window_s * const window,
                                        const windowMsg_e msg,
                                        const uintptr_t a,
@@ -96,10 +91,11 @@ typedef uintptr_t ( * msgHandler_cb )( window_s * const window,
 
 window_s * Window_Create( window_s * const parent,
                           msgHandler_cb cb,
-                          vec2f32_s position,
-                          vec2f32_s size,
+                          vec2_s< size_t > position,
+                          vec2_s< size_t > size,
                           const size_t userDataSize,
                           void * const param );
+
 void Window_Destroy( window_s * const window );
 
 uintptr_t Window_SendMessage( window_s * const window,
@@ -109,7 +105,7 @@ uintptr_t Window_SendMessage( window_s * const window,
 
 void * Window_GetUserData( window_s * const window );
 
-void Window_Render( rgba_s * const surface, size_t stride, rectf32_s clip );
+void Window_Render( rgba_s * const surface, size_t stride, rect_s< size_t > clip );
 
 void Window_SetParent( window_s * const parent, window_s * const child );
 

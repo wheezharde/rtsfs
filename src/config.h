@@ -26,7 +26,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef enum configError_e {
+typedef enum configError_e : uint8_t {
     kConfigError_None = 0,
     kConfigError_MalformedArgument,
     kConfigError_UnknownArgument,
@@ -35,7 +35,7 @@ typedef enum configError_e {
     kConfigError_ArgumentNotAllowed,
 } configError_e;
 
-typedef enum configArg_e {
+typedef enum configArg_e : uint8_t {
     kConfigArg_None,     // 'argument'; 'argument=abc' generates an error
     kConfigArg_Required, // 'argument=abc'; 'argument' generates an error
     kConfigArg_Optional, // 'argument=abc' or 'argument'

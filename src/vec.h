@@ -25,30 +25,20 @@
 
 #include <stdint.h>
 
-typedef struct vec2f32_s {
-    float x;
-    float y;
-} vec2f32_s;
+template < typename _type_ >
+struct vec2_s {
+    _type_ x = 0;
+    _type_ y = 0;
+};
 
-inline vec2f32_s vec2f32_zero( void ) {
-    return ( vec2f32_s ) { 0, 0 };
+template < typename _type_ >
+vec2_s< _type_ > vec2_zero( void ) {
+    return { _type_( 0 ), _type_( 0 ) };
 }
 
-inline vec2f32_s vec2f32_add( vec2f32_s a, vec2f32_s b ) {
-    return ( vec2f32_s ) { a.x + b.x, a.y + b.y };
-}
-
-typedef struct vec2u32_s {
-    uint32_t x;
-    uint32_t y;
-} vec2u32_s;
-
-inline vec2u32_s vec2u32_zero( void ) {
-    return ( vec2u32_s ) { 0, 0 };
-}
-
-inline vec2u32_s vec2u32_add( vec2u32_s a, vec2u32_s b ) {
-    return ( vec2u32_s ) { a.x + b.x, a.y + b.y };
+template < typename _type_ >
+vec2_s< _type_ > vec2_add( vec2_s< _type_ > a, vec2_s< _type_ > b ) {
+    return { a.x + b.x, a.y + b.y };
 }
 
 #endif // ___RTSFS_VEC_H___

@@ -25,14 +25,10 @@
 
 #include "vec.h"
 
-typedef struct rectf32_s {
-    vec2f32_s mn;
-    vec2f32_s mx;
-} rectf32_s;
-
-typedef struct rectu32_s {
-    vec2u32_s mn;
-    vec2u32_s mx;
-} rectu32_s;
+template < typename _type_ >
+struct rect_s {
+    vec2_s< _type_ > mn{ 0, 0 };
+    vec2_s< _type_ > mx{ 0, 0 };
+};
 
 #endif // ___RTSFS_RECT_H___

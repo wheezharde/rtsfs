@@ -23,6 +23,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -31,16 +32,16 @@
 #include "window.h"
 
 typedef struct appData_s {
-    BITMAPINFO ** buffers;
-    uint32_t bufferForeground;
-    uint32_t bufferCount;
-    HDC dc;
-    HBITMAP bmp;
-    int width;
-    int height;
-    int framerate;
-    int frametime;
-    uint64_t nextframe;
+    BITMAPINFO ** buffers = nullptr;
+    uint32_t bufferForeground = 0;
+    uint32_t bufferCount = 0;
+    HDC dc = nullptr;
+    HBITMAP bmp = nullptr;
+    size_t width = 0;
+    size_t height = 0;
+    size_t framerate = 0;
+    size_t frametime = 0;
+    uint64_t nextframe = 0;
 } appData_s;
 
 static LRESULT CALLBACK myWindowProc( HWND wnd, UINT msg, WPARAM wp, LPARAM lp ) {
@@ -48,7 +49,6 @@ static LRESULT CALLBACK myWindowProc( HWND wnd, UINT msg, WPARAM wp, LPARAM lp )
         case WM_CREATE: {
             CREATESTRUCT * const cs = ( CREATESTRUCT * )lp;
             appData_s * const me = ( appData_s * )cs->lpCreateParams;
-
             SetWindowLongPtr( wnd, GWLP_USERDATA, ( LONG_PTR )me );
         } break;
 
@@ -61,34 +61,39 @@ static LRESULT CALLBACK myWindowProc( HWND wnd, UINT msg, WPARAM wp, LPARAM lp )
 
             appData_s * const me = ( appData_s * )GetWindowLongPtr( wnd, GWLP_USERDATA );
 
-            if ( me->width != r.right - r.left || me->height != r.bottom - r.top ) {
-                me->width = r.right - r.left;
-                me->height = r.bottom - r.top;
+            assert( r.right > r.left );
+            assert( r.bottom > r.top );
 
-                ReleaseDC( NULL, me->dc );
+            const size_t newWidth = ( size_t )( r.right ) - ( size_t )( r.left );
+            const size_t newHeight = ( size_t )( r.bottom ) - ( size_t )( r.top );
+            if ( me->width != newWidth || me->height != newHeight ) {
+                me->width = newWidth;
+                me->height = newHeight;
+
+                ReleaseDC( nullptr, me->dc );
                 DeleteObject( me->bmp );
 
-                if ( me->buffers != NULL ) {
+                if ( me->buffers != nullptr ) {
                     for ( size_t i = 0; i < me->bufferCount; i++ ) {
-                        if ( me->buffers[ i ] != NULL ) {
+                        if ( me->buffers[ i ] != nullptr ) {
                             free( me->buffers[ i ] );
                         }
                     }
                     free( me->buffers );
                 }
 
-                me->dc = CreateCompatibleDC( GetDC( NULL ) );
-                me->bmp = CreateCompatibleBitmap( GetDC( NULL ), me->width, me->height );
+                me->dc = CreateCompatibleDC( GetDC( nullptr ) );
+                me->bmp = CreateCompatibleBitmap( GetDC( nullptr ), ( int )me->width, ( int )me->height );
 
                 SelectObject( me->dc, me->bmp );
 
                 me->buffers = ( BITMAPINFO ** )malloc( sizeof( BITMAPINFO * ) * me->bufferCount );
-                if ( me->buffers != NULL ) {
+                if ( me->buffers != nullptr ) {
                     for ( size_t i = 0; i < me->bufferCount; i++ ) {
                         const size_t size = sizeof( BITMAPINFO ) + sizeof( COLORREF ) * me->width * me->height;
                         BITMAPINFO * const bmi = ( BITMAPINFO * )malloc( size );
                         me->buffers[ i ] = bmi;
-                        if ( bmi == NULL ) {
+                        if ( bmi == nullptr ) {
                             continue;
                         }
                         memset( bmi, 0, size );
@@ -113,8 +118,8 @@ static LRESULT CALLBACK myWindowProc( HWND wnd, UINT msg, WPARAM wp, LPARAM lp )
             }
 
             BITMAPINFO * const bmi = me->buffers[ me->bufferForeground ];
-            if ( bmi != NULL ) {
-                SetDIBits( me->dc, me->bmp, 0, me->height, bmi + 1, bmi, DIB_RGB_COLORS );
+            if ( bmi != nullptr ) {
+                SetDIBits( me->dc, me->bmp, 0, ( UINT )me->height, bmi + 1, bmi, DIB_RGB_COLORS );
                 BitBlt( dc,
                         ps.rcPaint.left,
                         ps.rcPaint.top,
@@ -142,13 +147,13 @@ static ATOM registerWindowClass( const char * const classname ) {
     wndClass.cbSize = sizeof( wndClass );
     wndClass.style = CS_HREDRAW | CS_VREDRAW;
     wndClass.lpfnWndProc = myWindowProc;
-    wndClass.hInstance = GetModuleHandle( NULL );
+    wndClass.hInstance = GetModuleHandle( nullptr );
     wndClass.lpszClassName = classname;
     return RegisterClassExA( &wndClass );
 }
 
 static void unregisterWindowClass( const char * const classname ) {
-    UnregisterClassA( classname, GetModuleHandle( NULL ) );
+    UnregisterClassA( classname, GetModuleHandle( nullptr ) );
 }
 
 static int update( void ) {
@@ -174,7 +179,7 @@ static uintptr_t windowCallback( window_s * const window, const windowMsg_e msg,
         case kWindow_OnRender: {
             windowRenderData_s * const renderData = ( windowRenderData_s * )a;
             // todo: clip
-            rgba_s * pix = renderData->surface + ( uintptr_t )( renderData->position.y * renderData->stride + renderData->position.x );
+            rgba_s * pix = renderData->surface + renderData->position.y * renderData->stride +  renderData->position.x;
             for ( size_t y = 0; y < renderData->size.y; y++ ) {
                 memset( pix , 0xcc, ( size_t )(renderData->size.x * sizeof( rgba_s ) ) );
                 pix += renderData->stride;
@@ -211,7 +216,7 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
     };
     const size_t configRuleCount = sizeof( configRule ) / sizeof( configRule[ 0 ] );
 
-    const configResult_s result = Config_Parse( __argc, __argv, configRuleCount, configRule );
+    const configResult_s result = Config_Parse( ( size_t )__argc, __argv, configRuleCount, configRule );
     ( void )result;
 
     const char * windowClassName = "rtsfs";
@@ -236,16 +241,16 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
                                 0,
                                 1024,
                                 768,
-                                NULL,
-                                NULL,
+                                nullptr,
+                                nullptr,
                                 inst,
                                 &appData );
 
     appData.nextframe = GetTickCount64() + appData.frametime;
 
-    window_s * const w = Window_Create( 0, windowCallback, vec2f32_zero(), ( vec2f32_s ){ 100, 100 }, 64, 0 );
+    window_s * const w = Window_Create( 0, windowCallback, vec2_zero< size_t >(), { 100, 100 }, 64, 0 );
 
-    if ( wnd != NULL ) {
+    if ( wnd != nullptr ) {
         for ( ;; ) {
             for ( ;; ) {
                 const ULONGLONG now = GetTickCount64();
@@ -257,7 +262,7 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
             }
 
             MSG msg;
-            while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) {
+            while ( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) ) {
                 if ( msg.message == WM_QUIT ) {
                     break;
                 }
@@ -273,10 +278,10 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
 
             Window_Render( rgba,
                            appData.width,
-                           ( rectf32_s ){
-                               vec2f32_zero(),
-                               ( vec2f32_s ){ ( float )appData.width, ( float )appData.height }
-                           }  );
+                           {
+                               vec2_zero< size_t >(),
+                               { appData.width, appData.height }
+                           } );
 
             InvalidateRect( wnd, 0, FALSE );
 
@@ -293,9 +298,9 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
     ReleaseDC( wnd, appData.dc );
     DeleteObject( appData.bmp );
 
-    if ( appData.buffers != NULL ) {
+    if ( appData.buffers != nullptr ) {
         for ( size_t i = 0; i < appData.bufferCount; i++ ) {
-            if ( appData.buffers[ i ] != NULL ) {
+            if ( appData.buffers[ i ] != nullptr ) {
                 free( appData.buffers[ i ] );
             }
         }
