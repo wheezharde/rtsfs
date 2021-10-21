@@ -99,7 +99,7 @@ static LRESULT CALLBACK myWindowProc( HWND wnd, UINT msg, WPARAM wp, LPARAM lp )
                         memset( bmi, 0, size );
                         bmi->bmiHeader.biSize = sizeof( BITMAPINFO );
                         bmi->bmiHeader.biWidth = ( LONG )me->width;
-                        bmi->bmiHeader.biHeight = ( LONG )me->height;
+                        bmi->bmiHeader.biHeight = -( LONG )me->height; // vertically flip
                         bmi->bmiHeader.biPlanes = 1;
                         bmi->bmiHeader.biBitCount = 32;
                         bmi->bmiHeader.biCompression = BI_RGB;
@@ -275,13 +275,11 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
             }
 
             rgba_s * const rgba = ( rgba_s * )( appData.buffers[ appData.bufferForeground ] + 1 );
-
-            Window_Render( rgba,
-                           appData.width,
-                           {
-                               vec2_zero< size_t >(),
-                               { appData.width, appData.height }
-                           } );
+            rect_s< size_t > clip = {
+                vec2_zero< size_t >(),
+                { appData.width, appData.height }
+            };
+            Window_Render( rgba, appData.width, clip );
 
             InvalidateRect( wnd, 0, FALSE );
 
