@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\config.cpp" />
+    <ClCompile Include="..\..\src\digraph.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\window.cpp" />
   </ItemGroup>
@@ -160,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\config.h" />
+    <ClInclude Include="..\..\src\digraph.h" />
     <ClInclude Include="..\..\src\rect.h" />
     <ClInclude Include="..\..\src\rgba.h" />
     <ClInclude Include="..\..\src\vec.h" />
