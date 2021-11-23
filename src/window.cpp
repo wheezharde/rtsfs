@@ -62,7 +62,12 @@ static void Window_RenderRecurse( window_s * const window, rgba_s * const surfac
     }
 }
 
-window_s * Window_Create( window_s * const parent, msgHandler_cb cb, vec2_s< size_t > position, vec2_s< size_t > size, size_t userDataSize, void * const param ) {
+window_s * Window_Create( window_s * const parent,
+                          msgHandler_cb const cb,
+                          const vec2_s< size_t > position,
+                          const vec2_s< size_t > size,
+                          const size_t userDataSize,
+                          void * const param ) {
     const size_t mallocSize = sizeof( window_s ) + userDataSize;
 
     window_s * const window = ( window_s * )malloc( mallocSize );

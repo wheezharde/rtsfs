@@ -90,9 +90,9 @@ typedef uintptr_t ( * msgHandler_cb )( window_s * const window,
                                        const uintptr_t b );
 
 window_s * Window_Create( window_s * const parent,
-                          msgHandler_cb cb,
-                          vec2_s< size_t > position,
-                          vec2_s< size_t > size,
+                          msgHandler_cb const cb,
+                          const vec2_s< size_t > position,
+                          const vec2_s< size_t > size,
                           const size_t userDataSize,
                           void * const param );
 
