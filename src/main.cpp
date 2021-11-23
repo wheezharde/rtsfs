@@ -180,8 +180,9 @@ static uintptr_t windowCallback( window_s * const window, const windowMsg_e msg,
             windowRenderData_s * const renderData = ( windowRenderData_s * )a;
             // todo: clip
             rgba_s * pix = renderData->surface + renderData->position.y * renderData->stride +  renderData->position.x;
+            const float step = ( float )renderData->size.y / 128.0f;
             for ( size_t y = 0; y < renderData->size.y; y++ ) {
-                memset( pix , 0xcc, ( size_t )(renderData->size.x * sizeof( rgba_s ) ) );
+                memset( pix , 255 - ( 64 + ( uint8_t )( step * ( float )y ) ), ( size_t )(renderData->size.x * sizeof( rgba_s ) ) );
                 pix += renderData->stride;
             }
         } break;
