@@ -220,7 +220,7 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
     const configResult_s result = Config_Parse( ( size_t )__argc, __argv, configRuleCount, configRule );
     ( void )result;
 
-    const char * windowClassName = "rtsfs";
+    const char * const windowClassName = "rtsfs";
 
     ATOM wndAtom = registerWindowClass( windowClassName );
     if ( wndAtom == 0 ) {
@@ -276,7 +276,7 @@ int __stdcall WinMain( HINSTANCE inst, HINSTANCE prev, char * cmdline, int show 
             }
 
             rgba_s * const rgba = ( rgba_s * )( appData.buffers[ appData.bufferForeground ] + 1 );
-            rect_s< size_t > clip = rectFrom( vec2_zero< size_t >(), { appData.width, appData.height } );
+            const rect_s< size_t > clip = rectFrom( vec2_zero< size_t >(), { appData.width, appData.height } );
             Window_Render( rgba, appData.width, clip );
 
             InvalidateRect( wnd, 0, FALSE );

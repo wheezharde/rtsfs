@@ -105,7 +105,7 @@ uintptr_t Window_SendMessage( window_s * const window,
 
 void * Window_GetUserData( window_s * const window );
 
-void Window_Render( rgba_s * const surface, size_t stride, rect_s< size_t > clip );
+void Window_Render( rgba_s * const surface, const size_t stride, const rect_s< size_t > clip );
 
 void Window_SetParent( window_s * const parent, window_s * const child );
 
